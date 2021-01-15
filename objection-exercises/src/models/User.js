@@ -1,3 +1,4 @@
+const { HasManyRelation, ManyToManyRelation } = require('./BaseModel')
 const BaseModel = require('./BaseModel')
 
 class User extends BaseModel {
@@ -6,8 +7,54 @@ class User extends BaseModel {
   }
 
   static get relationMappings() {
-    return {}
+    const Pet = require('./Pet')
+    return {
+      pets: {
+        relation: HasManyRelation,
+        modelClass: Pet,
+        join: {
+          from: 'users.id',
+          to: 'pets.ownerId'
+        }
+      },
+      parents: {
+        relation: ManyToManyRelation,
+        modelClass: User,
+        join: {
+          from: 'users.id',
+          through: {
+            from: 'relations.childId',
+            to: 'relations.parentId'
+          },
+          to: 'users.id'
+        }
+      },
+      children: {
+        relation: ManyToManyRelation,
+        modelClass: User,
+        join: {
+          from: 'users.id',
+          through: {
+            from: 'relations.parentId',
+            to: 'relations.childId'
+          },
+          to: 'users.id'
+        }
+      }
+    }
   }
+  static get virtualAttributes() {
+    return ['fullName', 'overTwenty']
+  }
+  fullName() {
+    return `${this.firstName} ${this.lastName}`
+  }
+  overTwenty() {
+    return this.age > 20
+  }
+
+
+
 }
 
 module.exports = User
